@@ -1,4 +1,4 @@
-// importações
+// Importações
 require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
@@ -18,8 +18,6 @@ app.get('/', (req, res) => {
     res.status(200).json({ msg: 'Desafio 2' })
 });
 
-
-
 // Registro do Usuário
 
 app.post("/auth/registro", async (req, res) => {
@@ -38,7 +36,6 @@ app.post("/auth/registro", async (req, res) => {
     if(!senha) {
         return res.status(422).json({msg: 'A senha é obrigatória'})
     }
-
     
     if(senha !== confirmSenha){
         return res
@@ -49,8 +46,6 @@ app.post("/auth/registro", async (req, res) => {
     if(!telefone) {
         return res.status(422).json({msg: 'O telefone é obrigatório'})
     }
-
-
     
     // Checando através do banco de dados
     const usuarioExiste = await User.findOne({email: email})
@@ -71,17 +66,15 @@ app.post("/auth/registro", async (req, res) => {
         telefone
     });
 
-
     try{
-
+        
         await usuario.save();
-
         res.status(201).json({msg: 'Usuário criado com sucesso'});
 
     } catch(error){
         console.log(error)
         res
-        .status(500).json({msg: error})
+        .status(500).json({msg: error});
     }
 });
 
@@ -93,9 +86,9 @@ app.get("/user/:id", verificacaoToken, async (req, res) =>{
     const usuario = await User.findById(id, "-senha")
 
     if(!usuario){
-        return res.status(404).json({ msg: 'Usuário não foi encontrado'})
+        return res.status(404).json({ msg: 'Usuário não foi encontrado'});
     }
-    res.status(200).json({ usuario })
+    res.status(200).json({ usuario });
 })
 
 // Verificação de Token
@@ -123,35 +116,31 @@ function verificacaoToken(req, res, next){
       } 
     }
 
-// Output
-
-
 //Login
-
 app.post("/auth/login", async (req, res) =>{
     const {email, senha} = req.body
 
     //Validações
     if(!email) {
-        return res.status(422).json({msg: 'O email é obrigatório'})
+        return res.status(422).json({msg: 'O email é obrigatório'});
     }
 
     if(!senha) {
-        return res.status(422).json({msg: 'A senha é obrigatória'})
+        return res.status(422).json({msg: 'A senha é obrigatória'});
     }
 
     // checagem do usuário
     const usuario = await User.findOne({email: email})
 
     if(!usuario){
-        return res.status(401).json({msg: 'Usuário e / ou senha inválidos!'})
+        return res.status(401).json({msg: 'Usuário e / ou senha inválidos!'});
     }
 
     // Checagem de senha
     const checagemSenha = await bcrypt.compare(senha, usuario.senha)
 
     if(!checagemSenha){
-        return res.status(422).json({msg: 'Usuário e / ou senha inválidos!'})
+        return res.status(422).json({msg: 'Usuário e / ou senha inválidos!'});
     }
 
     try {
@@ -161,12 +150,9 @@ app.post("/auth/login", async (req, res) =>{
         {
             id: usuario._id,
         },
-
-        
-        
+                
         secret, {
             expiresIn:'30m',
-            
         }
     );
 
@@ -175,20 +161,14 @@ app.post("/auth/login", async (req, res) =>{
     } catch(err){
         console.log(error)
         res.
-        status(500).json({msg: error})
+        status(500).json({msg: error});
     }
 
 });
 
-
-
-
-
-
 // Credenciais do banco
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASS;
-
 
 mongoose
 .connect(
