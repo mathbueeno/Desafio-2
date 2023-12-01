@@ -67,7 +67,7 @@ app.post("/auth/registro", async (req, res) => {
     const usuario = new User({
         nome,
         email,
-        senhaHash,
+        senha: senhaHash,
         telefone
     });
 
@@ -85,12 +85,100 @@ app.post("/auth/registro", async (req, res) => {
     }
 });
 
+// Rota do Hash
+app.get("/user/:id", verificacaoToken, async (req, res) =>{
+    const id = req.params.id
+
+    // Checagem do usuário
+    const usuario = await User.findById(id, "-senha")
+
+    if(!usuario){
+        return res.status(404).json({ msg: 'Usuário não foi encontrado'})
+    }
+    res.status(200).json({ usuario })
+})
+
+// Verificação de Token
+function verificacaoToken(req, res, next){
+
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({ msg: "Acesso negado!" });
+    }
+
+    try {
+        const secret = process.env.SECRET;    
+        jwt.verify(token, secret);    
+        next();
+
+      } catch (error) {
+        console.error(error);
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ msg: 'Sessão inválida' });
+        }
+
+        res.status(400).json({ msg: "O Token é inválido" });
+      } 
+    }
+
+// Output
 
 
+//Login
 
+app.post("/auth/login", async (req, res) =>{
+    const {email, senha} = req.body
 
+    //Validações
+    if(!email) {
+        return res.status(422).json({msg: 'O email é obrigatório'})
+    }
 
+    if(!senha) {
+        return res.status(422).json({msg: 'A senha é obrigatória'})
+    }
 
+    // checagem do usuário
+    const usuario = await User.findOne({email: email})
+
+    if(!usuario){
+        return res.status(401).json({msg: 'Usuário e / ou senha inválidos!'})
+    }
+
+    // Checagem de senha
+    const checagemSenha = await bcrypt.compare(senha, usuario.senha)
+
+    if(!checagemSenha){
+        return res.status(422).json({msg: 'Usuário e / ou senha inválidos!'})
+    }
+
+    try {
+        const secret = process.env.SECRET;
+        
+        const token = jwt.sign(
+        {
+            id: usuario._id,
+        },
+
+        
+        
+        secret, {
+            expiresIn:'30m',
+            
+        }
+    );
+
+      res.status(200).json({ msg: 'Autenticação realizada com sucesso', token })
+
+    } catch(err){
+        console.log(error)
+        res.
+        status(500).json({msg: error})
+    }
+
+});
 
 
 
